@@ -17,6 +17,7 @@ namespace ebankingAPI.Models
         public string TransactionParticulars { get; set; }
         public TType TransactionType { get; set; }
         public DateTime TransactionDate { get; set; }
+        public string TransactionCurrency { get; set; }
 
         public Transaction()
         {

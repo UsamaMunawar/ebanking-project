@@ -35,36 +35,36 @@ namespace ebankingAPI.Controllers
 
         [HttpPost]
         [Route("deposit")]
-        public IActionResult Deposit(string AccountNumber, decimal Ammount, string TransactionPin)
+        public IActionResult Deposit(string AccountNumber, decimal Ammount, string TransactionPin, string TransactionCurrency)
         {
             if(!Regex.IsMatch(AccountNumber, @"^[0][1-9]\d{10}$|^[1-9]\d{9}$"))
             {
                 return BadRequest("Invalid Account Number, Account Number must have 10-Digits");
             }
-            return Ok(_transactionService.MakeDeposit(AccountNumber, Ammount, TransactionPin));
+            return Ok(_transactionService.MakeDeposit(AccountNumber, Ammount, TransactionPin, TransactionCurrency));
         }
 
         [HttpPost]
         [Route("withdrawl")]
-        public IActionResult Withdrawl(string AccountNumber, decimal Ammount, string TransactionPin)
+        public IActionResult Withdrawl(string AccountNumber, decimal Ammount, string TransactionPin, string TransactionCurrency)
         {
             if (!Regex.IsMatch(AccountNumber, @"^[0][1-9]\d{10}$|^[1-9]\d{9}$"))
             {
                 return BadRequest("Invalid Account Number, Account Number must have 10-Digits");
             }
-            return Ok(_transactionService.MakeWithdrawl(AccountNumber, Ammount, TransactionPin));
+            return Ok(_transactionService.MakeWithdrawl(AccountNumber, Ammount, TransactionPin, TransactionCurrency));
         }
 
         [HttpPost]
         [Route("transfer-funds")]
-        public IActionResult Transfer(string FromAccount, string ToAccount, decimal Ammount, string TransactionPin)
+        public IActionResult Transfer(string FromAccount, string ToAccount, decimal Ammount, string TransactionPin, string TransactionCurrency)
         {
             if (!Regex.IsMatch(FromAccount, @"^[0][1-9]\d{10}$|^[1-9]\d{9}$") || !Regex.IsMatch(ToAccount, @"^[0][1-9]\d{10}$|^[1-9]\d{9}$"))
             {
                 return BadRequest("Invalid Account Number. Account Number must be 10-Digits");
             }
 
-            return Ok(_transactionService.MakeFundsTransfer(FromAccount, ToAccount, Ammount, TransactionPin));
+            return Ok(_transactionService.MakeFundsTransfer(FromAccount, ToAccount, Ammount, TransactionPin, TransactionCurrency));
         }
     }
 }

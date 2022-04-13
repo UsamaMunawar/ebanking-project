@@ -13,15 +13,17 @@ namespace ebankingAPI.Services.Interfaces
         private AppSettings _appSettings;
         private static string _ebankingSettlementAccount;
         private readonly IAccountService _accountService;
+        private readonly ICurrencyService _currencyService;
 
 
-        public TransactionService(EBankingDBContext eBankingDBContext, ILogger<TransactionService> logger, IOptions<AppSettings> appSettings, IAccountService accountService)
+        public TransactionService(EBankingDBContext eBankingDBContext, ILogger<TransactionService> logger, IOptions<AppSettings> appSettings, IAccountService accountService, ICurrencyService currencyService)
         {
             _dbContext = eBankingDBContext;
             _logger = logger;
             _appSettings = appSettings.Value;
             _ebankingSettlementAccount = _appSettings.EBankingSettlementAccount;
             _accountService = accountService;
+            _currencyService = currencyService;
         }
 
 
@@ -48,22 +50,24 @@ namespace ebankingAPI.Services.Interfaces
             return response;
         }
 
-        public Response MakeDeposit(string AccountNumber, decimal Ammount, string TransactionPin)
+        public Response MakeDeposit(string AccountNumber, decimal Ammount, string TransactionPin, string TransactionCurrency)
         {
             Response response = new Response();
             Account sourceAccount;
             Account destinationAccount;
             Transaction transaction = new Transaction();
+            Currency currency = new Currency();
             var authenticateUser = _accountService.AuthenticateByAccountNumber(AccountNumber, TransactionPin);
             if (authenticateUser == null) throw new ApplicationException("Invalid Credentials");
 
             try
             {
+                currency = _currencyService.GetByShortName(TransactionCurrency);
                 sourceAccount = _accountService.GetByAccountNumber(_ebankingSettlementAccount);
                 destinationAccount = _accountService.GetByAccountNumber(AccountNumber);
 
-                sourceAccount.CurrentAccountBalance -= Ammount;
-                destinationAccount.CurrentAccountBalance += Ammount;
+                sourceAccount.CurrentAccountBalance -= Math.Round(Ammount / currency.ConversionRate);
+                destinationAccount.CurrentAccountBalance += Math.Round(Ammount / currency.ConversionRate);
                 if(_dbContext.Entry(sourceAccount).State == Microsoft.EntityFrameworkCore.EntityState.Modified &&
                         _dbContext.Entry(destinationAccount).State == Microsoft.EntityFrameworkCore.EntityState.Modified)
                 {
@@ -88,6 +92,7 @@ namespace ebankingAPI.Services.Interfaces
             transaction.TransactionDestination = AccountNumber;
             transaction.TransactionAmount = Ammount;
             transaction.TransactionDate = DateTime.Now;
+            transaction.TransactionCurrency = TransactionCurrency;
             transaction.TransactionParticulars = $"{Ammount} Deposited from {JsonConvert.SerializeObject(transaction.TransactionSourceAccount)} to {JsonConvert.SerializeObject(transaction.TransactionDestination)} on {transaction.TransactionDate}";
             
             _dbContext.Transactions.Add(transaction);
@@ -96,22 +101,24 @@ namespace ebankingAPI.Services.Interfaces
             return response;
         }
 
-        public Response MakeFundsTransfer(string FromAccount, string ToAccount, decimal Ammount, string TransactionPin)
+        public Response MakeFundsTransfer(string FromAccount, string ToAccount, decimal Ammount, string TransactionPin, string TransactionCurrency)
         {
             Response response = new Response();
             Account sourceAccount;
             Account destinationAccount;
             Transaction transaction = new Transaction();
+            Currency currency = new Currency();
             var authenticateUser = _accountService.AuthenticateByAccountNumber(FromAccount, TransactionPin);
             if (authenticateUser == null) throw new ApplicationException("Invalid Credentials");
 
             try
             {
+                currency = _currencyService.GetByShortName(TransactionCurrency);
                 sourceAccount = _accountService.GetByAccountNumber(FromAccount);
                 destinationAccount = _accountService.GetByAccountNumber(ToAccount);
 
-                sourceAccount.CurrentAccountBalance -= Ammount;
-                destinationAccount.CurrentAccountBalance += Ammount;
+                sourceAccount.CurrentAccountBalance -= Math.Round(Ammount/currency.ConversionRate);
+                destinationAccount.CurrentAccountBalance += Math.Round(Ammount / currency.ConversionRate);
                 if (_dbContext.Entry(sourceAccount).State == Microsoft.EntityFrameworkCore.EntityState.Modified &&
                         _dbContext.Entry(destinationAccount).State == Microsoft.EntityFrameworkCore.EntityState.Modified)
                 {
@@ -138,6 +145,7 @@ namespace ebankingAPI.Services.Interfaces
             transaction.TransactionDestination = ToAccount;
             transaction.TransactionAmount = Ammount;
             transaction.TransactionDate = DateTime.Now;
+            transaction.TransactionCurrency = TransactionCurrency;
             transaction.TransactionParticulars = $"{Ammount} Transfered from {JsonConvert.SerializeObject(transaction.TransactionSourceAccount)} to {JsonConvert.SerializeObject(transaction.TransactionDestination)} on {transaction.TransactionDate}. Transaction Type: {transaction.TransactionType}";
 
             _dbContext.Transactions.Add(transaction);
@@ -146,12 +154,13 @@ namespace ebankingAPI.Services.Interfaces
             return response;
         }
 
-        public Response MakeWithdrawl(string AccountNumber, decimal Ammount, string TransactionPin)
+        public Response MakeWithdrawl(string AccountNumber, decimal Ammount, string TransactionPin, string TransactionCurrency)
         {
             Response response = new Response();
             Account sourceAccount;
             Account destinationAccount;
             Transaction transaction = new Transaction();
+            Currency currency = new Currency();
             var authenticateUser = _accountService.AuthenticateByAccountNumber(AccountNumber, TransactionPin);
             if (authenticateUser == null) throw new ApplicationException("Invalid Credentials");
 
@@ -160,8 +169,8 @@ namespace ebankingAPI.Services.Interfaces
                 sourceAccount = _accountService.GetByAccountNumber(AccountNumber);
                 destinationAccount = _accountService.GetByAccountNumber(_ebankingSettlementAccount);
 
-                sourceAccount.CurrentAccountBalance -= Ammount;
-                destinationAccount.CurrentAccountBalance += Ammount;
+                sourceAccount.CurrentAccountBalance -= Math.Round(Ammount / currency.ConversionRate);
+                destinationAccount.CurrentAccountBalance += Math.Round(Ammount / currency.ConversionRate);
                 if (_dbContext.Entry(sourceAccount).State == Microsoft.EntityFrameworkCore.EntityState.Modified &&
                         _dbContext.Entry(destinationAccount).State == Microsoft.EntityFrameworkCore.EntityState.Modified)
                 {
@@ -188,6 +197,7 @@ namespace ebankingAPI.Services.Interfaces
             transaction.TransactionDestination = _ebankingSettlementAccount;
             transaction.TransactionAmount = Ammount;
             transaction.TransactionDate = DateTime.Now;
+            transaction.TransactionCurrency = TransactionCurrency;
             transaction.TransactionParticulars = $"{Ammount} Transfered from {JsonConvert.SerializeObject(transaction.TransactionSourceAccount)} to {JsonConvert.SerializeObject(transaction.TransactionDestination)} on {transaction.TransactionDate}. Transaction Type: {transaction.TransactionType}";
 
             _dbContext.Transactions.Add(transaction);

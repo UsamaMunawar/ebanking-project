@@ -12,5 +12,6 @@ namespace ebankingAPI.AppContexts
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<Currency> Currency { get; set; }
     }
 }

@@ -7,5 +7,6 @@
         public string TransactionDestination { get; set; }
         public TType TransactionType { get; set; }
         public DateTime TransactionDate { get; set; }
+        public string TransactionCurrency { get; set; }
     }
 }

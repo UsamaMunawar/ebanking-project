@@ -11,7 +11,7 @@ using ebankingAPI.AppContexts;
 namespace ebankingAPI.Migrations
 {
     [DbContext(typeof(EBankingDBContext))]
-    [Migration("20220412221007_initialMigration")]
+    [Migration("20220413094553_initialMigration")]
     partial class initialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -88,6 +88,28 @@ namespace ebankingAPI.Migrations
                     b.ToTable("Accounts");
                 });
 
+            modelBuilder.Entity("ebankingAPI.Models.Currency", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ConversionRate")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ShortName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Currency");
+                });
+
             modelBuilder.Entity("ebankingAPI.Models.Transaction", b =>
                 {
                     b.Property<int>("Id")
@@ -96,6 +118,10 @@ namespace ebankingAPI.Migrations
 
                     b.Property<decimal>("TransactionAmount")
                         .HasColumnType("decimal(65,30)");
+
+                    b.Property<string>("TransactionCurrency")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("datetime(6)");

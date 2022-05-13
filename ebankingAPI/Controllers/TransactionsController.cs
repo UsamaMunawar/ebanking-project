@@ -66,5 +66,15 @@ namespace ebankingAPI.Controllers
 
             return Ok(_transactionService.MakeFundsTransfer(FromAccount, ToAccount, Ammount, TransactionPin, TransactionCurrency));
         }
+
+        [HttpGet]
+        [Route("/all_transactions")]
+        public IActionResult GetAllAccounts()
+        {
+            var transactions = _transactionService.GetAllTransactions();
+            return Ok(transactions);
+        }
+
+
     }
 }

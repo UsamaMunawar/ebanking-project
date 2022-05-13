@@ -168,6 +168,7 @@ namespace ebankingAPI.Services.Interfaces
             {
                 sourceAccount = _accountService.GetByAccountNumber(AccountNumber);
                 destinationAccount = _accountService.GetByAccountNumber(_ebankingSettlementAccount);
+                currency = _currencyService.GetByShortName(TransactionCurrency);
 
                 sourceAccount.CurrentAccountBalance -= Math.Round(Ammount / currency.ConversionRate);
                 destinationAccount.CurrentAccountBalance += Math.Round(Ammount / currency.ConversionRate);
@@ -204,6 +205,11 @@ namespace ebankingAPI.Services.Interfaces
             _dbContext.SaveChanges();
 
             return response;
+        }
+
+        public IEnumerable<Transaction> GetAllTransactions()
+        {
+            return _dbContext.Transactions.ToList();
         }
     }
 }

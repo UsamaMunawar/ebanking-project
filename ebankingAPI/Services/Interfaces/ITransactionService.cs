@@ -11,5 +11,7 @@ namespace ebankingAPI.Services
 
         Response MakeFundsTransfer(string FromAccount, string ToAccount, decimal Ammount, string TransactionPin, string TransactionCurrency);
 
+        IEnumerable<Transaction> GetAllTransactions();
+
     }
 }
